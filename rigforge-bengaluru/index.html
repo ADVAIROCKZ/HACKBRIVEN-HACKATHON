@@ -179,6 +179,157 @@
     </div>
   </section>
 
+  <!-- Build with Confidence - Guided Builder Hub Section -->
+  <section class="guided-builder-section" id="guidedBuilderSection" aria-label="Guided Builder Hub">
+    <div class="container">
+      <!-- Section Header -->
+      <div class="guided-header">
+        <div class="guided-header-left">
+          <div class="guided-badge font-mono">
+            <span class="sparkle">🛡️</span> VERIFIED COMPATIBILITY • REAL-TIME GUIDANCE
+          </div>
+          <h2 class="guided-title font-orbitron">Build with confidence</h2>
+          <p class="guided-subtitle">Start from a budget, check your current parts list, or explore curated retail offers and popular builds.</p>
+        </div>
+        <div class="guided-header-right">
+          <span class="guided-status-pill font-mono">
+            <span class="pulse-dot"></span> LIVE COMPATIBILITY ENGINE
+          </span>
+        </div>
+      </div>
+
+      <!-- 3-Column Interactive Action Cards Grid -->
+      <div class="guided-cards-grid">
+        <!-- Card 1: Tell us what you need -->
+        <article class="guided-card">
+          <div class="guided-card-header">
+            <div class="guided-icon-wrap icon-cyan">
+              <span>✨</span>
+            </div>
+            <div>
+              <span class="guided-card-kicker font-mono">AI RIG CONFIGURATOR</span>
+              <h3 class="guided-card-title">Tell us what you need</h3>
+            </div>
+          </div>
+          <p class="guided-card-desc">Enter your target spend and workflow. We'll automatically pick a balanced, bottleneck-free rig from our catalog.</p>
+          
+          <form id="guidedBuilderForm" class="guided-form" onsubmit="event.preventDefault(); handleGuidedBuildSubmit();">
+            <div class="guided-input-group">
+              <label for="guidedBudgetInput">Approximate budget (<span id="guidedBudgetCurrencyLabel">₹</span>)</label>
+              <div class="guided-input-prefix-wrap">
+                <span class="input-currency-symbol font-mono" id="guidedBudgetPrefix">₹</span>
+                <input type="number" id="guidedBudgetInput" placeholder="e.g. 80000" min="20000" max="1000000" step="5000" value="80000">
+              </div>
+            </div>
+
+            <div class="guided-form-row">
+              <div class="guided-input-group flex-1">
+                <label for="guidedUseSelect">Main use</label>
+                <select id="guidedUseSelect" class="guided-select">
+                  <option value="gaming" selected>Gaming</option>
+                  <option value="editing">Content Creation / Editing</option>
+                  <option value="workstation">AI / Workstation</option>
+                  <option value="office">Office &amp; Everyday</option>
+                </select>
+              </div>
+
+              <div class="guided-input-group flex-1">
+                <label for="guidedResolutionSelect">Target</label>
+                <select id="guidedResolutionSelect" class="guided-select">
+                  <option value="1080p">1080p Full HD</option>
+                  <option value="1440p" selected>1440p (Sweet Spot)</option>
+                  <option value="4k">4K Ultra HD</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" id="guidedSuggestBtn" class="guided-btn btn-glow-cyan">
+              <span>Get guided suggestions →</span>
+            </button>
+          </form>
+        </article>
+
+        <!-- Card 2: Check your current build -->
+        <article class="guided-card">
+          <div class="guided-card-header">
+            <div class="guided-icon-wrap icon-emerald">
+              <span>🛡️</span>
+            </div>
+            <div>
+              <span class="guided-card-kicker font-mono">HARDWARE DIAGNOSTIC</span>
+              <h3 class="guided-card-title">Check your current build</h3>
+            </div>
+          </div>
+          <p class="guided-card-desc">Review your selected parts for platform and power questions. The checker flags known issues and tells you when a detail still needs a manufacturer spec check.</p>
+
+          <div class="guided-cart-status" id="guidedCartStatusBox">
+            <div class="gcs-row">
+              <span class="gcs-label">Core Parts in Cart:</span>
+              <span class="gcs-val font-mono text-cyan" id="guidedCartCountText">0 of 6 Core Parts</span>
+            </div>
+            <div class="gcs-progress-track">
+              <div class="gcs-progress-bar" id="guidedCartProgressBar" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="guided-card-actions">
+            <button type="button" id="cardReviewBuildBtn" class="guided-btn btn-outline-cyan" onclick="openRigModal()">
+              <span>🔍 Review my build</span>
+            </button>
+            <button type="button" id="cardSaveBuildBtn" class="guided-btn btn-outline-emerald" onclick="handleSaveCurrentBuild()">
+              <span>💾 Save current build</span>
+            </button>
+            <button type="button" id="cardSavedBuildsBtn" class="guided-link-btn font-mono" onclick="openSavedBuildsModal()">
+              My saved builds &amp; orders →
+            </button>
+          </div>
+        </article>
+
+        <!-- Card 3: Retail offers & what's popular here -->
+        <article class="guided-card">
+          <div class="guided-card-header">
+            <div class="guided-icon-wrap icon-violet">
+              <span>📈</span>
+            </div>
+            <div>
+              <span class="guided-card-kicker font-mono">MARKET INTELLIGENCE</span>
+              <h3 class="guided-card-title">Retail offers &amp; what's popular here</h3>
+            </div>
+          </div>
+          <p class="guided-card-desc">Compare verified retailer offers, track local catalog popularity, and ask our assistant about current component discounts before checking out.</p>
+
+          <div class="guided-trending-chips">
+            <span class="gt-chip">🔥 RTX 4070 Super</span>
+            <span class="gt-chip">⚡ Ryzen 7 7800X3D</span>
+            <span class="gt-chip">💾 DDR5-6000 CL30</span>
+            <span class="gt-chip">💿 Gen4 7,450MB/s</span>
+          </div>
+
+          <div class="guided-card-actions">
+            <button type="button" id="cardAskDiscountsBtn" class="guided-btn btn-glow-violet" onclick="handleAskDiscountsClick()">
+              <span>Ask RigGuide about discounts →</span>
+            </button>
+
+            <div class="guided-footer-links">
+              <span class="gfl-label font-mono">OFFICIAL TECH HUBS:</span>
+              <div class="gfl-links">
+                <a href="https://www.nvidia.com/en-in/geforce/news/" target="_blank" rel="noopener noreferrer" class="gfl-link">NVIDIA ↗</a>
+                <a href="https://community.amd.com/" target="_blank" rel="noopener noreferrer" class="gfl-link">AMD ↗</a>
+                <a href="https://www.intel.com/content/www/us/en/newsroom/home.html" target="_blank" rel="noopener noreferrer" class="gfl-link">Intel ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Subtle Disclaimer Strip -->
+      <div class="guided-disclaimer-strip">
+        <span class="gds-icon">ℹ️</span>
+        <span class="gds-text">Retailer search links can show different sellers or variants. Confirm exact model, delivery, card eligibility, and EMI charges at checkout.</span>
+      </div>
+    </div>
+  </section>
+
   <!-- Filter & Catalog Controls Section -->
   <section class="controls-section" id="catalogSection">
     <div class="container">
@@ -357,6 +508,53 @@
       <div class="rig-modal-footer">
         <button class="btn btn-secondary" onclick="closeRigModal()">Close</button>
         <button class="btn btn-primary" onclick="closeRigModal(); openCartDrawer();">View Loaded Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved Builds & Orders Modal -->
+  <div id="savedBuildsModal" class="rig-modal-overlay hidden" aria-hidden="true" role="dialog" aria-labelledby="savedBuildsModalTitle">
+    <div class="rig-modal-dialog saved-builds-dialog">
+      <div class="rig-modal-header">
+        <div class="rig-header-title">
+          <span class="rig-header-icon">💾</span>
+          <div>
+            <h3 id="savedBuildsModalTitle">My Saved Builds &amp; Orders</h3>
+            <p class="rig-modal-sub">View and restore saved configurations or check verified orders</p>
+          </div>
+        </div>
+        <button id="closeSavedBuildsBtn" class="close-modal-btn" aria-label="Close Saved Builds" onclick="closeSavedBuildsModal()">✕</button>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="saved-modal-tabs" role="tablist">
+        <button type="button" class="saved-tab-btn active" id="tabSavedBuilds" onclick="switchSavedTab('builds')">
+          <span>📦 Saved Builds (<span id="savedBuildsCount">0</span>)</span>
+        </button>
+        <button type="button" class="saved-tab-btn" id="tabPastOrders" onclick="switchSavedTab('orders')">
+          <span>🧾 Order History (<span id="pastOrdersCount">0</span>)</span>
+        </button>
+      </div>
+
+      <div class="rig-modal-body">
+        <!-- Panel 1: Saved Builds -->
+        <div id="savedBuildsPanel" class="saved-tab-panel">
+          <div id="savedBuildsList" class="saved-items-list">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+
+        <!-- Panel 2: Past Orders -->
+        <div id="pastOrdersPanel" class="saved-tab-panel hidden">
+          <div id="pastOrdersList" class="saved-items-list">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="rig-modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeSavedBuildsModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="closeSavedBuildsModal(); openCartDrawer();">View Cart</button>
       </div>
     </div>
   </div>

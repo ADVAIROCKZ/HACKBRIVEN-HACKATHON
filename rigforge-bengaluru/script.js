@@ -304,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initModalListeners();
   initRigAssistant();
   updateRigStatusIndicator();
+  initGuidedBuilder();
 
   // Connect to live Supabase PostgreSQL while keeping initial catalog instant
   syncLiveCatalogFromSupabase();
@@ -328,6 +329,7 @@ function initCurrencyToggle() {
     updateCurrencyBtnUI();
     renderProducts();
     renderCart();
+    updateGuidedBuilderCurrency();
     if (AppState.inspectorPartId) {
       renderInspectorModal(AppState.inspectorPartId);
     }
@@ -1057,6 +1059,15 @@ function initModalListeners() {
   const checkoutBtn = document.getElementById('checkoutBtn');
   const closeCheckoutBtn = document.getElementById('closeCheckoutBtn');
   const checkoutModal = document.getElementById('checkoutModal');
+  const savedBuildsModal = document.getElementById('savedBuildsModal');
+  const closeSavedBuildsBtn = document.getElementById('closeSavedBuildsBtn');
+
+  if (closeSavedBuildsBtn) closeSavedBuildsBtn.addEventListener('click', closeSavedBuildsModal);
+  if (savedBuildsModal) {
+    savedBuildsModal.addEventListener('click', (e) => {
+      if (e.target === savedBuildsModal) closeSavedBuildsModal();
+    });
+  }
 
   if (closeInspectorBtn) closeInspectorBtn.addEventListener('click', closePartInspector);
   if (inspectorModal) {
@@ -1374,7 +1385,6 @@ function closeRigModal() {
 
 function updateRigStatusIndicator() {
   const indicator = document.getElementById('rigStatusDot');
-  if (!indicator) return;
 
   const categoriesInCart = new Set();
   AppState.cart.forEach(item => {
@@ -1383,8 +1393,12 @@ function updateRigStatusIndicator() {
   });
 
   const count = categoriesInCart.size;
-  indicator.textContent = `${count}/6`;
-  indicator.classList.toggle('complete', count === 6);
+  if (indicator) {
+    indicator.textContent = `${count}/6`;
+    indicator.classList.toggle('complete', count === 6);
+  }
+
+  updateGuidedBuilderStatus(count);
 }
 
 function updateRigModalContent() {
@@ -1465,6 +1479,328 @@ function updateRigModalContent() {
     } else {
       diagnosticList.innerHTML = diagnostics.map(d => `<li>${d}</li>`).join('');
     }
+  }
+}
+
+// ==========================================================================
+// Build with Confidence: Guided Builder Hub & Saved Builds
+// ==========================================================================
+
+function initGuidedBuilder() {
+  updateGuidedBuilderStatus();
+  updateGuidedBuilderCurrency();
+  updateSavedBuildsCount();
+}
+
+function updateGuidedBuilderStatus(filledCount) {
+  const countText = document.getElementById('guidedCartCountText');
+  const progressBar = document.getElementById('guidedCartProgressBar');
+  if (!countText && !progressBar) return;
+
+  if (filledCount === undefined) {
+    const categoriesInCart = new Set();
+    AppState.cart.forEach(item => {
+      const part = PC_PARTS_DATA.find(p => p.id === item.partId);
+      if (part) categoriesInCart.add(part.categoryKey);
+    });
+    filledCount = categoriesInCart.size;
+  }
+
+  const percent = Math.round((filledCount / 6) * 100);
+  if (countText) {
+    countText.textContent = `${filledCount} of 6 Core Parts (${percent}%)`;
+    countText.className = `gcs-val font-mono ${filledCount === 6 ? 'text-emerald' : 'text-cyan'}`;
+  }
+  if (progressBar) {
+    progressBar.style.width = `${percent}%`;
+    progressBar.style.background = filledCount === 6 ? 'var(--accent-emerald)' : 'var(--accent-cyan)';
+  }
+}
+
+function updateGuidedBuilderCurrency() {
+  const currLabel = document.getElementById('guidedBudgetCurrencyLabel');
+  const prefix = document.getElementById('guidedBudgetPrefix');
+  const budgetInput = document.getElementById('guidedBudgetInput');
+  if (!currLabel || !prefix || !budgetInput) return;
+
+  const isINR = AppState.currency === 'INR';
+  currLabel.textContent = isINR ? '₹' : '$';
+  prefix.textContent = isINR ? '₹' : '$';
+
+  if (!isINR && Number(budgetInput.value) > 5000) {
+    budgetInput.value = '1000';
+    budgetInput.placeholder = 'e.g. 1000';
+    budgetInput.step = '50';
+    budgetInput.min = '300';
+  } else if (isINR && Number(budgetInput.value) < 5000) {
+    budgetInput.value = '80000';
+    budgetInput.placeholder = 'e.g. 80000';
+    budgetInput.step = '5000';
+    budgetInput.min = '25000';
+  }
+}
+
+function handleGuidedBuildSubmit() {
+  const budgetInput = document.getElementById('guidedBudgetInput');
+  const useSelect = document.getElementById('guidedUseSelect');
+  const resSelect = document.getElementById('guidedResolutionSelect');
+
+  const budgetVal = budgetInput ? Number(budgetInput.value) || 80000 : 80000;
+  const useVal = useSelect ? useSelect.options[useSelect.selectedIndex].text : 'Gaming';
+  const resVal = resSelect ? resSelect.value : '1440p';
+
+  const isINR = AppState.currency === 'INR';
+  const budgetStr = isINR ? `₹${budgetVal.toLocaleString('en-IN')}` : `$${budgetVal.toLocaleString('en-US')}`;
+
+  const promptText = `Suggest a balanced ${resVal} ${useVal} build under ${budgetStr}`;
+
+  if (typeof window.openRigGuideWithPrompt === 'function') {
+    window.openRigGuideWithPrompt(promptText);
+  } else {
+    const launch = document.getElementById('buddyLaunch');
+    if (launch) launch.click();
+  }
+
+  showToast('Guided Configurator', `Generating ${resVal} ${useVal} build for ${budgetStr}!`, '⚡');
+  logKafkaEvent('GUIDED_CONFIG_QUERY', `User submitted guided build: ${resVal} | ${useVal} | ${budgetStr}`);
+}
+
+function handleSaveCurrentBuild() {
+  if (!AppState.cart || AppState.cart.length === 0) {
+    showToast('Cart is Empty', 'Add components to your cart before saving a build!', '⚠️');
+    return;
+  }
+
+  let subtotalUSD = 0;
+  let subtotalINR = 0;
+  const partNames = [];
+
+  AppState.cart.forEach(item => {
+    const part = PC_PARTS_DATA.find(p => p.id === item.partId);
+    if (part) {
+      subtotalUSD += (part.priceUSD || 0) * item.quantity;
+      subtotalINR += (part.priceINR || part.priceUSD * 88) * item.quantity;
+      partNames.push(`${item.quantity}x ${part.name}`);
+    }
+  });
+
+  const now = new Date();
+  const dateFormatted = now.toLocaleDateString('en-IN', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const savedBuilds = JSON.parse(localStorage.getItem('rigforge_saved_builds') || '[]');
+  const newBuild = {
+    id: `build-${Date.now()}`,
+    name: `Custom Rig (${dateFormatted})`,
+    savedAt: now.toISOString(),
+    displayDate: dateFormatted,
+    items: JSON.parse(JSON.stringify(AppState.cart)),
+    itemCount: AppState.cart.reduce((sum, i) => sum + i.quantity, 0),
+    totalUSD: subtotalUSD,
+    totalINR: subtotalINR,
+    partsSummary: partNames
+  };
+
+  savedBuilds.unshift(newBuild);
+  if (savedBuilds.length > 25) savedBuilds.pop();
+  localStorage.setItem('rigforge_saved_builds', JSON.stringify(savedBuilds));
+
+  updateSavedBuildsCount();
+  showToast('Build Saved!', `Saved "${newBuild.name}" to your local profile.`, '💾');
+  logKafkaEvent('BUILD_SAVED_PROFILE', `Configuration saved with ${newBuild.itemCount} components (Total: ${formatCurrency(subtotalUSD, subtotalINR)})`);
+}
+
+function updateSavedBuildsCount() {
+  const countBadge = document.getElementById('savedBuildsCount');
+  if (countBadge) {
+    const savedBuilds = JSON.parse(localStorage.getItem('rigforge_saved_builds') || '[]');
+    countBadge.textContent = savedBuilds.length;
+  }
+}
+
+function openSavedBuildsModal() {
+  renderSavedBuildsList();
+  renderPastOrdersList();
+
+  const modal = document.getElementById('savedBuildsModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeSavedBuildsModal() {
+  const modal = document.getElementById('savedBuildsModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+}
+
+function switchSavedTab(tab) {
+  const tabBuilds = document.getElementById('tabSavedBuilds');
+  const tabOrders = document.getElementById('tabPastOrders');
+  const panelBuilds = document.getElementById('savedBuildsPanel');
+  const panelOrders = document.getElementById('pastOrdersPanel');
+
+  if (tab === 'builds') {
+    if (tabBuilds) tabBuilds.classList.add('active');
+    if (tabOrders) tabOrders.classList.remove('active');
+    if (panelBuilds) panelBuilds.classList.remove('hidden');
+    if (panelOrders) panelOrders.classList.add('hidden');
+  } else {
+    if (tabBuilds) tabBuilds.classList.remove('active');
+    if (tabOrders) tabOrders.classList.add('active');
+    if (panelBuilds) panelBuilds.classList.add('hidden');
+    if (panelOrders) panelOrders.classList.remove('hidden');
+  }
+}
+
+function renderSavedBuildsList() {
+  const listEl = document.getElementById('savedBuildsList');
+  const countBadge = document.getElementById('savedBuildsCount');
+  if (!listEl) return;
+
+  const savedBuilds = JSON.parse(localStorage.getItem('rigforge_saved_builds') || '[]');
+  if (countBadge) countBadge.textContent = savedBuilds.length;
+
+  if (savedBuilds.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-saved-state">
+        <span class="empty-saved-icon">📦</span>
+        <p><strong>No saved builds yet!</strong></p>
+        <p style="margin-top: 4px; font-size: 0.76rem;">Assemble components in your cart and click <em>"Save current build"</em> to store multiple configurations.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = savedBuilds.map(build => `
+    <div class="saved-item-card" data-build-id="${build.id}">
+      <div class="saved-item-header">
+        <div>
+          <div class="saved-item-title">${build.name}</div>
+          <div class="saved-item-date">${build.displayDate || 'Recently Saved'} • ${build.itemCount} items</div>
+        </div>
+        <div class="saved-item-price">${formatCurrency(build.totalUSD, build.totalINR)}</div>
+      </div>
+      <div class="saved-item-badges">
+        ${(build.partsSummary || []).slice(0, 4).map(p => `<span class="saved-chip font-mono">${p}</span>`).join('')}
+        ${(build.partsSummary && build.partsSummary.length > 4) ? `<span class="saved-chip font-mono">+${build.partsSummary.length - 4} more</span>` : ''}
+      </div>
+      <div class="saved-item-actions">
+        <button type="button" class="btn-delete-saved" onclick="deleteSavedBuild('${build.id}')" title="Delete this saved configuration">🗑️ Delete</button>
+        <button type="button" class="btn-load-build" onclick="loadSavedBuildIntoCart('${build.id}')" title="Load these components into your cart">🛒 Load into Cart</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function renderPastOrdersList() {
+  const listEl = document.getElementById('pastOrdersList');
+  const countBadge = document.getElementById('pastOrdersCount');
+  if (!listEl) return;
+
+  const localOrders = JSON.parse(localStorage.getItem('rigforge_past_orders') || '[]');
+  let allOrders = [...localOrders];
+
+  // If Supabase client is available, attempt to query live orders as well
+  const client = getSupabase();
+  if (client) {
+    try {
+      const { data: dbOrders, error } = await client.from('orders').select('*').order('id', { ascending: false }).limit(10);
+      if (!error && dbOrders && dbOrders.length > 0) {
+        dbOrders.forEach(o => {
+          const displayId = `#SP-ORD-${o.id}`;
+          if (!allOrders.some(x => x.id === displayId)) {
+            allOrders.push({
+              id: displayId,
+              date: o.created_at ? new Date(o.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified',
+              customer_name: o.customer_name || 'Verified Customer',
+              total: typeof o.total_amount === 'number' ? `₹${o.total_amount.toLocaleString('en-IN')}` : `$${o.total_amount}`,
+              status: o.status || 'Confirmed'
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Orders fetch notice:', err);
+    }
+  }
+
+  if (countBadge) countBadge.textContent = allOrders.length;
+
+  if (allOrders.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-saved-state">
+        <span class="empty-saved-icon">🧾</span>
+        <p><strong>No past orders yet.</strong></p>
+        <p style="margin-top: 4px; font-size: 0.76rem;">Complete checkout to record orders with live Supabase PostgreSQL and Kafka event streaming.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = allOrders.map(order => `
+    <div class="saved-item-card">
+      <div class="saved-item-header">
+        <div>
+          <div class="saved-item-title font-mono text-cyan">${order.id}</div>
+          <div class="saved-item-date">${order.date || 'Recent'} • Customer: ${order.customer_name || 'Builder'}</div>
+        </div>
+        <div>
+          <span class="badge-instock" style="display:inline-block; margin-bottom:4px; font-size:0.65rem;">✓ ${order.status || 'Confirmed'}</span>
+          <div class="saved-item-price">${order.total}</div>
+        </div>
+      </div>
+      ${order.items && order.items.length > 0 ? `
+        <div class="saved-item-badges">
+          ${order.items.slice(0, 3).map(p => `<span class="saved-chip font-mono">${p}</span>`).join('')}
+          ${order.items.length > 3 ? `<span class="saved-chip font-mono">+${order.items.length - 3} more</span>` : ''}
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+function loadSavedBuildIntoCart(buildId) {
+  const savedBuilds = JSON.parse(localStorage.getItem('rigforge_saved_builds') || '[]');
+  const build = savedBuilds.find(b => b.id === buildId);
+  if (!build) return;
+
+  AppState.cart = JSON.parse(JSON.stringify(build.items));
+  saveCart();
+  renderCart();
+  updateRigStatusIndicator();
+  closeSavedBuildsModal();
+  openCartDrawer();
+
+  showToast('Build Loaded!', `Loaded ${build.name} into your active cart`, '🛒');
+  logKafkaEvent('BUILD_RESTORED', `Loaded saved build "${build.name}" (${build.itemCount} items) into active checkout session`);
+}
+
+function deleteSavedBuild(buildId) {
+  let savedBuilds = JSON.parse(localStorage.getItem('rigforge_saved_builds') || '[]');
+  savedBuilds = savedBuilds.filter(b => b.id !== buildId);
+  localStorage.setItem('rigforge_saved_builds', JSON.stringify(savedBuilds));
+
+  renderSavedBuildsList();
+  showToast('Build Removed', 'Saved configuration deleted', '🗑️');
+}
+
+function handleAskDiscountsClick() {
+  const promptText = 'How do I get the best offline deals at SP Road Bangalore and online retailer discounts?';
+  if (typeof window.openRigGuideWithPrompt === 'function') {
+    window.openRigGuideWithPrompt(promptText);
+  } else {
+    const launch = document.getElementById('buddyLaunch');
+    if (launch) launch.click();
   }
 }
 
@@ -1768,6 +2104,35 @@ async function processSimulatedPayment() {
   renderProducts();
   goToCheckoutStep(3);
   showToast('Order Committed!', `Order ${displayOrderId} recorded in Supabase`, '🎉');
+
+  // Save order to localStorage past orders for saved builds & order history modal
+  try {
+    const pastOrders = JSON.parse(localStorage.getItem('rigforge_past_orders') || '[]');
+    const totalU = AppState.cart.reduce((sum, item) => {
+      const part = PC_PARTS_DATA.find(p => p.id === item.partId);
+      return sum + (part ? part.priceUSD * item.quantity : 0);
+    }, 0);
+    const totalI = AppState.cart.reduce((sum, item) => {
+      const part = PC_PARTS_DATA.find(p => p.id === item.partId);
+      return sum + (part ? (part.priceINR || part.priceUSD * 88) * item.quantity : 0);
+    }, 0);
+    const orderItemsSummaries = AppState.cart.map(item => {
+      const part = PC_PARTS_DATA.find(p => p.id === item.partId);
+      return `${item.quantity}x ${part ? part.name : item.partId}`;
+    });
+    pastOrders.unshift({
+      id: displayOrderId,
+      date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }),
+      customer_name: (document.getElementById('shipName') && document.getElementById('shipName').value) || 'Guest Builder',
+      total: formatCurrency(totalU, totalI),
+      status: 'Confirmed',
+      items: orderItemsSummaries
+    });
+    localStorage.setItem('rigforge_past_orders', JSON.stringify(pastOrders.slice(0, 30)));
+    updateSavedBuildsCount();
+  } catch (err) {
+    console.warn('Could not record past order to localStorage:', err);
+  }
 }
 
 function finishAndResetStore() {
@@ -2710,6 +3075,16 @@ function initRigGuide() {
       toggle(false);
     }
   });
+
+  // Expose global helper to open Build Buddy with an automated prompt
+  window.openRigGuideWithPrompt = function (promptText) {
+    toggle(true);
+    if (promptText) {
+      setTimeout(() => {
+        send(promptText);
+      }, 250);
+    }
+  };
 
   // Initialize Persona from state/storage
   setPersona(currentPersonaKey, false);
