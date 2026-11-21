@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RigForge – The Event-Driven PC Builder’s Hub</title>
+  <!-- Google Fonts: Inter & Orbitron & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Ambient Background Gradients -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-grid-overlay"></div>
+
+  <!-- Announcement & Architecture Status Bar -->
+  <div class="announcement-bar">
+    <div class="container announcement-content">
+      <div class="announcement-left">
+        <span class="badge-pulse">REAL-TIME SYSTEM</span>
+        <span class="team-credit-pill">Team-404:sleep not found • ID: CA0855333C15 • SVCE</span>
+      </div>
+      <p class="announcement-text">
+        <span>⚡ <strong>Aiven Apache Kafka</strong> event streaming & <strong>Aiven PostgreSQL</strong> row-lock active. Zero-oversell guaranteed.</span>
+      </p>
+      <div class="announcement-actions">
+        <button id="toggleKafkaTelemetryBtn" class="telemetry-toggle-btn" title="Open Aiven Kafka Event Bus Monitor">
+          <span class="pulse-indicator">●</span> KAFKA EVENT STREAM
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Site Header -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-container">
+      <!-- Logo Branding -->
+      <a href="#" class="brand-logo" id="logoBtn">
+        <div class="logo-chip-icon">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 8L16 2L28 8V24L16 30L4 24V8Z" stroke="#00f2fe" stroke-width="2" fill="#090d16"/>
+            <path d="M16 2V30" stroke="#00f2fe" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <path d="M4 8L28 24" stroke="#00f2fe" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <path d="M28 8L4 24" stroke="#00f2fe" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <circle cx="16" cy="16" r="4" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">RIG<span class="highlight">FORGE</span></span>
+          <span class="brand-subtitle">EVENT-DRIVEN PC HUB</span>
+        </div>
+      </a>
+
+      <!-- Quick Navigation Links (Matching PDF Slide 1 & 11) -->
+      <nav class="header-nav">
+        <a href="#" class="nav-link active" onclick="filterByCategory('all'); return false;">Home</a>
+        <a href="#" class="nav-link" onclick="openRigModal(); return false;">Custom Builder</a>
+        <a href="#" class="nav-link" onclick="scrollToCatalog(); return false;">Parts & Hardware</a>
+        <a href="#" class="nav-link" onclick="triggerFlashSaleSim(); return false;">
+          <span class="hot-deal-dot">🔥</span> Hot Deals
+        </a>
+      </nav>
+
+      <!-- Live Search Bar with OpenSearch Fuzzy Matching (Matching Slide 1 & Slide 11) -->
+      <div class="search-wrapper">
+        <div class="search-input-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Try typos: 'ryzn thredriper', 'rtx 40900 super'..." 
+            autocomplete="off"
+            aria-label="Search PC Components with Typo Tolerance"
+          >
+          <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" aria-label="Clear Search">✕</button>
+        </div>
+        
+        <!-- OpenSearch Typo-Tolerant "Did you mean:" Suggestion Box -->
+        <div id="searchSuggestions" class="search-suggestions hidden"></div>
+      </div>
+
+      <!-- Header Controls: Currency Switcher & Cart Trigger -->
+      <div class="header-controls">
+        <!-- Currency Toggle -->
+        <div class="currency-toggle-wrapper">
+          <button id="currencyBtn" class="currency-toggle-btn" title="Toggle Currency (USD / INR)">
+            <span class="curr-usd active" data-curr="USD">$ USD</span>
+            <span class="curr-divider">/</span>
+            <span class="curr-inr" data-curr="INR">₹ INR</span>
+          </button>
+        </div>
+
+        <!-- PC Rig Compatibility Pill Button -->
+        <button id="rigAssistantBtn" class="rig-pill-btn" title="View Rig Builder Status">
+          <span class="rig-icon">🛠️</span>
+          <span class="rig-text">RIG CHECK</span>
+          <span class="rig-status-dot empty" id="rigStatusDot">0/6</span>
+        </button>
+
+        <!-- Shopping Cart Trigger (Build Summary & Cart) -->
+        <button id="cartToggleBtn" class="cart-trigger-btn" aria-label="View Build Summary and Cart">
+          <div class="cart-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span id="cartCountBadge" class="cart-count-badge">0</span>
+          </div>
+          <div class="cart-trigger-info">
+            <span class="cart-label">CART</span>
+            <span id="cartHeaderTotal" class="cart-subtotal-text">$0.00</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner (Matching Slide 1 & Slide 11) -->
+  <section class="hero-section">
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="sparkle">⚡</span> POWERED BY AIVEN OPENSEARCH & APACHE KAFKA
+        </div>
+        <h1 class="hero-title">
+          The Event-Driven <span class="text-gradient">PC Builder's Hub</span>
+        </h1>
+        <p class="hero-description">
+          Lightning-fast fuzzy search, live-sync stock, and zero-oversell checkouts. 
+          Built on an asynchronous event-streaming backbone that prevents database deadlocks and eliminates phantom stock during flash sales.
+        </p>
+
+        <!-- Quick Spec Stats -->
+        <div class="hero-metrics">
+          <div class="metric-item">
+            <span class="metric-val text-cyan">&lt; 5 ms</span>
+            <span class="metric-lbl">OpenSearch Fuzzy Latency</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val text-emerald">100%</span>
+            <span class="metric-lbl">ACID Zero-Oversell Lock</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val text-violet">Kafka Stream</span>
+            <span class="metric-lbl">Decoupled Microservices</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-val text-amber">Q4 2024</span>
+            <span class="metric-lbl">Verified Silicon Batches</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual Hardware Preview Card -->
+      <div class="hero-feature-card">
+        <div class="feature-card-glow"></div>
+        <div class="feature-card-inner">
+          <div class="feature-header">
+            <span class="feature-tag">REAL-TIME INVENTORY STREAM</span>
+            <span class="badge-instock" id="heroLiveSyncBadge">● IN STOCK (Real-time Sync)</span>
+          </div>
+          <div class="feature-svg-wrap" id="heroFeaturedGraphic">
+            <!-- Populated via JS with flagship GPU -->
+          </div>
+          <div class="feature-info">
+            <h3 class="feature-title">ASUS ROG Strix GeForce RTX 4090 OC</h3>
+            <p class="feature-specs">24GB GDDR6X • Ada Lovelace • 16,384 CUDA Cores • 450W</p>
+            <div class="feature-meta">
+              <span class="meta-mfg">🏭 ASUS / NVIDIA • Mfg: Oct 2024</span>
+              <button class="feature-inspect-btn" onclick="openPartInspector('gpu-rtx4090-fe')">Inspect Part</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Catalog Controls Section -->
+  <section class="controls-section" id="catalogSection">
+    <div class="container">
+      <!-- Category Pills Scrollable -->
+      <div class="categories-nav" id="categoriesNav" role="tablist">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Secondary Filter Toolbar with OpenSearch Facets -->
+      <div class="filter-toolbar">
+        <div class="toolbar-left">
+          <!-- Brand / Manufacturer Selector -->
+          <div class="select-wrapper">
+            <label for="brandSelect">Manufacturer:</label>
+            <select id="brandSelect" class="custom-select" aria-label="Filter by Manufacturer">
+              <!-- Rendered by JS -->
+            </select>
+          </div>
+
+          <!-- Faceted Spec Filter (OpenSearch Faceting from PDF Slide 9) -->
+          <div class="select-wrapper">
+            <label for="facetSelect">Hardware Facet:</label>
+            <select id="facetSelect" class="custom-select" aria-label="Filter by Spec Facets">
+              <option value="all">All Specs & Form Factors</option>
+              <option value="socket-am5">Socket: AMD AM5</option>
+              <option value="socket-lga1700">Socket: Intel LGA1700</option>
+              <option value="socket-str5">Socket: Workstation sTR5</option>
+              <option value="vram-24gb">VRAM: 24GB Extreme</option>
+              <option value="vram-16gb">VRAM: 16GB High</option>
+              <option value="speed-gen5">Interface: PCIe Gen5 Ready</option>
+              <option value="form-atx">Form Factor: ATX</option>
+            </select>
+          </div>
+
+          <!-- Sort Selector -->
+          <div class="select-wrapper">
+            <label for="sortSelect">Sort By:</label>
+            <select id="sortSelect" class="custom-select" aria-label="Sort Components">
+              <option value="featured">Featured / Performance Tier</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="mfg-date">Manufacture Date: Newest First</option>
+              <option value="rating">Customer Rating (Highest)</option>
+              <option value="name">Alphabetical (A - Z)</option>
+            </select>
+          </div>
+
+          <!-- In-Stock Toggle -->
+          <label class="toggle-checkbox" for="inStockOnly">
+            <input type="checkbox" id="inStockOnly">
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">In-Stock Only</span>
+          </label>
+        </div>
+
+        <div class="toolbar-right">
+          <!-- Active Items Count & Reset -->
+          <span id="resultsCount" class="results-count">Showing 16 components</span>
+          <button id="resetFiltersBtn" class="reset-filters-btn hidden">
+            <span>✕ Reset Filters</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Filters Tag Strip -->
+      <div id="activeFiltersStrip" class="active-filters-strip hidden"></div>
+    </div>
+  </section>
+
+  <!-- Product Catalog Grid -->
+  <main class="catalog-section">
+    <div class="container">
+      <!-- Grid Container -->
+      <div id="productsGrid" class="products-grid">
+        <!-- Dynamic Product Cards injected by JS -->
+      </div>
+
+      <!-- Empty State View with OpenSearch Suggestion -->
+      <div id="emptyCatalogView" class="empty-state-card hidden">
+        <div class="empty-icon">🔍</div>
+        <h3>No Exact Component Matches</h3>
+        <p id="emptySearchTip">OpenSearch fuzzy engine did not find matches for your exact query.</p>
+        <button id="emptyResetBtn" class="btn btn-primary">Reset All Filters</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Aiven Kafka Event Bus & Architecture Monitor (Dockable Side Panel) -->
+  <aside id="kafkaTelemetryDrawer" class="telemetry-drawer" aria-hidden="true">
+    <div class="telemetry-header">
+      <div class="telemetry-title">
+        <span class="telemetry-icon">📡</span>
+        <div>
+          <h4>Aiven Apache Kafka Event Stream</h4>
+          <span class="telemetry-sub">Topic: <code>orders.checkout.v1</code> • Consumer Group: <code>rigforge-workers</code></span>
+        </div>
+      </div>
+      <button id="closeTelemetryBtn" class="close-telemetry-btn" aria-label="Close Monitor">✕</button>
+    </div>
+
+    <!-- Live Event Stream Feed -->
+    <div class="telemetry-body">
+      <div class="telemetry-stats-bar">
+        <div class="t-stat">
+          <span class="t-val text-cyan" id="statKafkaEvents">1,492</span>
+          <span class="t-lbl">Events Streamed</span>
+        </div>
+        <div class="t-stat">
+          <span class="t-val text-emerald" id="statLagMs">2.4 ms</span>
+          <span class="t-lbl">Consumer Lag</span>
+        </div>
+        <div class="t-stat">
+          <span class="t-val text-violet" id="statOversellCount">0</span>
+          <span class="t-lbl">Oversell Collisions</span>
+        </div>
+      </div>
+
+      <div class="telemetry-actions">
+        <button class="btn-flash-sim" onclick="triggerFlashSaleSim()">
+          ⚡ Simulate Flash Sale Traffic Spike (500 Concurrent Orders)
+        </button>
+      </div>
+
+      <div class="telemetry-log-wrapper">
+        <div class="log-terminal-header">
+          <span>● KAFKA BROKER LOGS [LIVE]</span>
+          <button class="clear-logs-btn" onclick="clearKafkaLogs()">Clear</button>
+        </div>
+        <div id="kafkaEventLogs" class="kafka-event-logs">
+          <!-- Injected dynamically by script.js -->
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Rig Builder Compatibility Assistant Modal -->
+  <div id="rigModal" class="rig-modal-overlay hidden" aria-hidden="true">
+    <div class="rig-modal-dialog">
+      <div class="rig-modal-header">
+        <div class="rig-header-title">
+          <span class="rig-header-icon">🛠️</span>
+          <div>
+            <h3>RigForge Rig Builder Compatibility Assistant</h3>
+            <p>Track your target system's core component coverage & socket clearance</p>
+          </div>
+        </div>
+        <button id="closeRigModalBtn" class="close-modal-btn" aria-label="Close Assistant">✕</button>
+      </div>
+
+      <div class="rig-modal-body">
+        <div class="rig-progress-bar-wrap">
+          <div class="rig-progress-text">
+            <span>Rig Completion:</span>
+            <strong id="rigCompletionPercent">0%</strong>
+          </div>
+          <div class="rig-progress-track">
+            <div id="rigProgressBar" class="rig-progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- 6 Core Categories Checklist -->
+        <div class="rig-checklist" id="rigChecklist">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="rig-compatibility-notes" id="rigNotesBox">
+          <div class="notes-header">
+            <span>⚡ Automated Hardware Diagnostics:</span>
+          </div>
+          <ul id="rigDiagnosticList" class="diagnostic-list">
+            <li>Add components to your cart to trigger automated thermal, socket, and wattage compatibility diagnostics.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="rig-modal-footer">
+        <button class="btn btn-secondary" onclick="closeRigModal()">Close</button>
+        <button class="btn btn-primary" onclick="closeRigModal(); openCartDrawer();">View Loaded Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Part Inspector Modal -->
+  <div id="inspectorModal" class="inspector-modal-overlay hidden" aria-hidden="true" role="dialog" aria-labelledby="modalPartName">
+    <div class="inspector-modal-dialog">
+      <!-- Close button -->
+      <button id="closeInspectorBtn" class="inspector-close-btn" aria-label="Close Inspector">✕</button>
+
+      <div class="inspector-grid" id="inspectorContent">
+        <!-- Rendered dynamically by script.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Shopping Cart Slide-Over Drawer (Build Summary & Cart from Slide 1 & Slide 11) -->
+  <div id="cartDrawerBackdrop" class="cart-backdrop hidden" aria-hidden="true"></div>
+  <aside id="cartDrawer" class="cart-drawer" aria-hidden="true" aria-label="Build Summary and Cart">
+    <!-- Cart Header -->
+    <div class="cart-drawer-header">
+      <div class="cart-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cart-title-icon">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <div>
+          <h3>Build Summary & Cart</h3>
+          <span id="cartItemsCountText" class="cart-subtitle">0 components selected</span>
+        </div>
+      </div>
+      <div class="cart-header-actions">
+        <button id="emptyCartBtn" class="clear-cart-link" title="Clear all items from cart">Clear</button>
+        <button id="closeCartBtn" class="close-cart-btn" aria-label="Close Cart">✕</button>
+      </div>
+    </div>
+
+    <!-- Rig Builder Quick Indicator Strip inside Cart -->
+    <div class="cart-rig-strip" id="cartRigStrip">
+      <span class="strip-label">RIG BUILD:</span>
+      <div class="strip-chips" id="cartRigChips">
+        <span class="chip-badge chip-cpu">CPU</span>
+        <span class="chip-badge chip-gpu">GPU</span>
+        <span class="chip-badge chip-mobo">MOBO</span>
+        <span class="chip-badge chip-ram">RAM</span>
+        <span class="chip-badge chip-storage">SSD</span>
+        <span class="chip-badge chip-psu">PSU</span>
+      </div>
+    </div>
+
+    <!-- Cart Items Scroll List -->
+    <div id="cartItemsList" class="cart-items-list">
+      <!-- Injected by script.js with Real-time Sync tags -->
+    </div>
+
+    <!-- Cart Footer & Checkout Summary (Matching Slide 1 & 11) -->
+    <div class="cart-drawer-footer" id="cartFooter">
+      <div class="cart-summary-breakdown">
+        <div class="summary-line">
+          <span>Subtotal</span>
+          <span id="summarySubtotal" class="font-mono">$0.00</span>
+        </div>
+        <div class="summary-line">
+          <span>Insured Express Courier</span>
+          <span id="summaryShipping" class="font-mono text-emerald">FREE</span>
+        </div>
+        <div class="summary-line">
+          <span id="summaryTaxLabel">Estimated Tax (8%)</span>
+          <span id="summaryTax" class="font-mono">$0.00</span>
+        </div>
+        <div class="summary-line total-line">
+          <span>Real-time Total</span>
+          <span id="summaryTotal" class="summary-total-price font-mono">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Button Matching Slide 1: CONFIRM & PLACE ORDER (Powered by Apache Kafka) -->
+      <button id="checkoutBtn" class="btn btn-checkout">
+        <span>CONFIRM & PLACE ORDER</span>
+        <span class="checkout-sub-pill">(Powered by Apache Kafka)</span>
+      </button>
+
+      <div class="cart-guarantee">
+        <span>🔒 Secure checkout backed by Aiven Apache Kafka & PostgreSQL • 100% oversell protection guaranteed</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Simulated Decoupled Checkout Modal (Matching Slide 4, 5, 7) -->
+  <div id="checkoutModal" class="checkout-modal-overlay hidden" aria-hidden="true" role="dialog">
+    <div class="checkout-modal-dialog">
+      <button id="closeCheckoutBtn" class="inspector-close-btn" aria-label="Close Checkout">✕</button>
+      
+      <!-- Checkout Wizard Header -->
+      <div class="checkout-header">
+        <div class="checkout-logo">
+          <span class="text-cyan font-orbitron">RIG</span><span class="font-orbitron">FORGE // EVENT CHECKOUT</span>
+        </div>
+        <div class="checkout-steps">
+          <div class="step-badge active" id="stepBadge1">1. Delivery</div>
+          <div class="step-divider"></div>
+          <div class="step-badge" id="stepBadge2">2. Payment & Event Stream</div>
+          <div class="step-divider"></div>
+          <div class="step-badge" id="stepBadge3">3. Decoupled Confirmation</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Shipping Info Form -->
+      <div id="checkoutStep1" class="checkout-step-body">
+        <h4 class="step-title">Insured Express Courier Delivery Address</h4>
+        <form id="shippingForm" onsubmit="event.preventDefault(); goToCheckoutStep(2);">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="shipName">Full Name / Rig Builder</label>
+              <input type="text" id="shipName" required placeholder="Alex Mercer" value="Advait Sharma">
+            </div>
+            <div class="form-group flex-1">
+              <label for="shipEmail">Order Updates Email</label>
+              <input type="email" id="shipEmail" required placeholder="builder@domain.com" value="builder@rigforge.io">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="shipAddress">Shipping Address</label>
+            <input type="text" id="shipAddress" required placeholder="124 Cyber Boulevard, Suite 500" value="7th Cross, Indiranagar Tech Corridor">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="shipCity">City / Hub</label>
+              <input type="text" id="shipCity" required placeholder="Bengaluru" value="Bengaluru">
+            </div>
+            <div class="form-group flex-1">
+              <label for="shipPostal">Postal / ZIP Code</label>
+              <input type="text" id="shipPostal" required placeholder="560038" value="560038">
+            </div>
+          </div>
+
+          <div class="checkout-action-row">
+            <button type="button" class="btn btn-secondary" onclick="closeCheckoutModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Proceed to Payment & Event Stream ➔</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 2: Payment Simulator -->
+      <div id="checkoutStep2" class="checkout-step-body hidden">
+        <h4 class="step-title">Select Payment Method (Decoupled Stream)</h4>
+        
+        <div class="payment-methods-grid">
+          <label class="payment-method-card active">
+            <input type="radio" name="paymentMethod" value="card" checked>
+            <div class="method-details">
+              <span class="method-title">💳 Credit / Debit Card (Instant Authorization)</span>
+              <span class="method-desc">0% APR Financing backed by instant Kafka event queue</span>
+            </div>
+          </label>
+
+          <label class="payment-method-card">
+            <input type="radio" name="paymentMethod" value="upi">
+            <div class="method-details">
+              <span class="method-title">⚡ Instant UPI / NetBanking / IMPS</span>
+              <span class="method-desc">Google Pay, PhonePe, Paytm, or NetBanking direct</span>
+            </div>
+          </label>
+
+          <label class="payment-method-card">
+            <input type="radio" name="paymentMethod" value="crypto">
+            <div class="method-details">
+              <span class="method-title">🪙 Web3 / Hardware Escrow</span>
+              <span class="method-desc">USDC, USDT, or Bitcoin with instant confirmation</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="order-quick-summary-box">
+          <div class="quick-summary-line">
+            <span>Items Subtotal:</span>
+            <span id="checkoutModalSubtotal" class="font-mono">$0.00</span>
+          </div>
+          <div class="quick-summary-line">
+            <span>Insured Delivery:</span>
+            <span class="font-mono text-emerald">FREE</span>
+          </div>
+          <div class="quick-summary-line total">
+            <span>Authorized Amount:</span>
+            <strong id="checkoutModalTotal" class="font-mono text-cyan">$0.00</strong>
+          </div>
+        </div>
+
+        <div class="checkout-action-row">
+          <button type="button" class="btn btn-secondary" onclick="goToCheckoutStep(1)">⬅ Back to Delivery</button>
+          <button type="button" class="btn btn-checkout" id="submitPaymentBtn" onclick="processSimulatedPayment()">
+            <span id="payBtnText">Publish 'OrderCreated' Event to Kafka</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Decoupled Confirmation (Matching Slide 5 & 7) -->
+      <div id="checkoutStep3" class="checkout-step-body hidden">
+        <div class="confirmation-box">
+          <div class="success-ring-animation">
+            <div class="success-icon">✓</div>
+          </div>
+          <h3 class="success-title">Order Accepted & Streamed to Apache Kafka!</h3>
+          <p class="success-subtitle">
+            Kafka Event ID: <strong id="confirmedOrderId" class="text-cyan font-mono">#EVT-892410-PARTITION-0</strong>
+          </p>
+
+          <!-- Microservice Pipeline Visual (Slide 7) -->
+          <div class="decoupled-pipeline-card">
+            <div class="pipeline-header">⚡ DECOUPLED EVENT STREAM PIPELINE:</div>
+            <div class="pipeline-step done">
+              <span class="p-icon">✓</span>
+              <span><strong>Kafka Topic:</strong> 'orders.created' partition committed at offset #1493</span>
+            </div>
+            <div class="pipeline-step done">
+              <span class="p-icon">✓</span>
+              <span><strong>Consumer A (PostgreSQL):</strong> Row-level lock decremented inventory without UI blocking</span>
+            </div>
+            <div class="pipeline-step done">
+              <span class="p-icon">✓</span>
+              <span><strong>Consumer B (OpenSearch):</strong> Catalog index updated in 3.1ms</span>
+            </div>
+            <div class="pipeline-step done">
+              <span class="p-icon">✓</span>
+              <span><strong>Consumer C (Notification):</strong> Dispatch confirmation sent to builder email</span>
+            </div>
+          </div>
+
+          <div class="confirmation-summary-card" id="confirmedOrderItems">
+            <!-- Injected by JS -->
+          </div>
+
+          <div class="confirmation-actions">
+            <button class="btn btn-secondary" onclick="printReceipt()">🖨️ Print Build Sheet</button>
+            <button class="btn btn-primary" onclick="finishAndResetStore()">Return to RigForge Store</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <div class="brand-title">RIG<span class="highlight">FORGE</span></div>
+        <p class="footer-tagline">
+          The Event-Driven PC Builder's Hub. Eliminating phantom stock and database lockups during GPU restocks with Aiven Apache Kafka, PostgreSQL ACID row-locking, and OpenSearch fuzzy discovery.
+        </p>
+        <div class="footer-badges">
+          <span class="f-badge">AIVEN KAFKA</span>
+          <span class="f-badge">AIVEN OPENSEARCH</span>
+          <span class="f-badge">POSTGRESQL ACID</span>
+          <span class="f-badge">ZERO-OVERSELL</span>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Component Categories</h4>
+          <ul>
+            <li><a href="#" onclick="filterByCategory('gpu'); return false;">Graphics Cards (GPUs)</a></li>
+            <li><a href="#" onclick="filterByCategory('cpu'); return false;">Processors (CPUs & Threadripper)</a></li>
+            <li><a href="#" onclick="filterByCategory('motherboard'); return false;">Motherboards (AM5 / Z790)</a></li>
+            <li><a href="#" onclick="filterByCategory('ram'); return false;">DDR5 Memory (RAM)</a></li>
+            <li><a href="#" onclick="filterByCategory('storage'); return false;">PCIe Gen4 / Gen5 NVMe SSDs</a></li>
+            <li><a href="#" onclick="filterByCategory('psu'); return false;">Titanium & Gold PSUs</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Hackathon Team & Project</h4>
+          <ul>
+            <li><strong class="text-cyan">Team-404:sleep not found</strong></li>
+            <li><span>ID: CA0855333C15</span></li>
+            <li><span>Sri Venkateshwara College of Engineering</span></li>
+            <li><span>Build Bengaluru Hackathon</span></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Architecture Feasibility</h4>
+          <p class="footer-note">
+            Built on event-streaming primitives. Handles extreme traffic spikes by spinning up independent Kafka consumer workers without touching core web servers.
+          </p>
+          <div class="contact-pill">
+            <span>ops@rigforge.io</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>© 2024-2026 RigForge • Team-404:sleep not found • Sri Venkateshwara College of Engineering</p>
+        <p class="dev-tag font-mono">EVENT-DRIVEN ARCHITECTURE • VANILLA JS • ZERO DEPENDENCIES</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data/parts.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
