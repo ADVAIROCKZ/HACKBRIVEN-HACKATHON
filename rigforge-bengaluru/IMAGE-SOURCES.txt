@@ -1,0 +1,39 @@
+RIGFORGE OFFICIAL PRODUCT IMAGE SOURCES
+
+Images in images/official are bundled locally for offline use. Each original asset was fetched from the named manufacturer site/CDN.
+
+NVIDIA GeForce RTX 4090 Founders Edition (three product views)
+https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/
+https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4090/geforce-rtx-4090-product-gallery-full-screen-3840-1.jpg
+https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4090/geforce-rtx-4090-product-gallery-full-screen-3840-2.jpg
+https://images.nvidia.com/aem-dam/Solutions/geforce/ada/rtx-4090/geforce-rtx-4090-product-gallery-full-screen-3840-3.jpg
+
+ASUS ROG Strix RTX 4080 SUPER OC (two views)
+https://rog.asus.com/graphics-cards/graphics-cards/rog-strix/rog-strix-rtx4080s-o16g-gaming/
+https://dlcdnwebimgs.asus.com/files/media/090C91F5-62E1-4C17-8A58-53D4C941795D/v1/img/kv/pd.png
+https://dlcdnwebimgs.asus.com/files/media/090C91F5-62E1-4C17-8A58-53D4C941795D/v1/img/explosion/pd.png
+
+ASUS ROG Crosshair X670E Hero (official product and feature imagery)
+https://rog.asus.com/motherboards/rog-crosshair/rog-crosshair-x670e-hero-model/
+https://dlcdnwebimgs.asus.com/files/media/0CBC145C-59B8-4B51-BF1A-DA0749FA1522/v1/img/kv/pd.png
+https://dlcdnwebimgs.asus.com/files/media/0CBC145C-59B8-4B51-BF1A-DA0749FA1522/v1/img/ksp/power-stages.jpg
+https://dlcdnwebimgs.asus.com/files/media/0CBC145C-59B8-4B51-BF1A-DA0749FA1522/v1/img/ksp/oc.jpg
+
+AMD Ryzen 7 7800X3D
+https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7800x3d.html
+https://www.amd.com/content/dam/amd/en/images/products/processors/ryzen/2505503-ryzen-7-7800x3d-og.jpg
+
+CORSAIR VENGEANCE RGB DDR5 (five product views)
+https://www.corsair.com/us/en/p/memory/cmh32gx5m2b6000c40/vengeance-rgb-32gb-2x16gb-ddr5-dram-6000mhz-c40-memory-kit-black-cmh32gx5m2b6000c40
+https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024,f_auto/products/Memory/vengeance-rgb-ddr5-blk-config/Gallery/Vengeance-RGB-DDR5-2UP-BLACK_01.webp
+https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024,f_auto/products/Memory/vengeance-rgb-ddr5-blk-config/Gallery/Vengeance-RGB-DDR5-2UP-BLACK_02.webp
+https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024,f_auto/products/Memory/vengeance-rgb-ddr5-blk-config/Gallery/Vengeance-RGB-DDR5-2UP-BLACK_03.webp
+https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024,f_auto/products/Memory/vengeance-rgb-ddr5-blk-config/Gallery/Vengeance-RGB-DDR5-2UP-BLACK_04.webp
+https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024,f_auto/products/Memory/vengeance-rgb-ddr5-blk-config/Gallery/Vengeance-RGB-DDR5-2UP-BLACK_05.webp
+
+
+CATALOG IMAGE BUNDLE
+All product photos used by the 66-component catalog are bundled under images/catalog for portable ZIP use. Sources include manufacturer product pages/CDNs (ASUS, AMD, NVIDIA, MSI, Sapphire, CORSAIR, G.SKILL, Kingston, SanDisk/WD), plus the product image sources from the original catalog where a manufacturer gallery was not available.
+
+The catalog includes a few unconfirmed Radeon model names and a GeForce RTX 4070 Super entry for which an exact product photo was not available in the source set. Those entries use representative family photos rather than an exact SKU image.
+
